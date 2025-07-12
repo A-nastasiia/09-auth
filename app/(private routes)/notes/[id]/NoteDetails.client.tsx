@@ -1,45 +1,47 @@
-"use client";
+'use client';
 
-import fetchNoteId from "@/lib/api";
-import Loader from "@/app/loading";
-import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
-import css from "./NoteDetails.module.css";
-import ErrorMessage from "../filter/[...slug]/error";
+import { fetchNoteById } from '@/lib/api/clientApi';
+import { useQuery } from '@tanstack/react-query';
+import { useParams } from 'next/navigation';
+import css from './NoteDetails.module.css';
 
-export default function NoteDetailsClient() {
-  const { id } = useParams<{ id: string }>();
-  const noteId = +id;
-  const {
-    data: note,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
-    queryKey: ["note", noteId],
-    queryFn: () => fetchNoteId(noteId),
-    refetchOnMount: false,
-  });
+function NoteDetailsClient() {
+	const id = useParams<{ id: string }>().id;
 
-  return (
-    <>
-      {isLoading && <Loader />}
-      {isError && !note && <ErrorMessage error={error} />}
-      {note && (
-        <main>
-          <div className={css.container}>
-            <div className={css.item}>
-              <div className={css.header}>
-                <h2>{note.title}</h2>
-                <button className={css.editBtn}>Edit note</button>
-              </div>
-              <p className={css.tag}>{String(note.tag)}</p>
-              <p className={css.content}>{note.content}</p>
-              <p className={css.date}>Created date: {note.createdAt}</p>
-            </div>
-          </div>
-        </main>
-      )}
-    </>
-  );
+	const {
+		data: note,
+		isLoading,
+		error,
+		isSuccess,
+		isError,
+	} = useQuery({
+		queryKey: ['note', id],
+		queryFn: () => fetchNoteById(id),
+		refetchOnMount: false,
+	});
+
+	if (isError) throw error;
+
+	return (
+		<div>
+			{isLoading && <p className={css.loadMessage}>Loading, please wait...</p>}
+			{!error && !note && !isLoading && <p className={css.errorMessage}>Not found</p>}
+			{note && isSuccess && (
+				<div className={css.container}>
+					<div className={css.item}>
+						<div className={css.header}>
+							<h2>{note.title}</h2>
+							<button className={css.editBtn}>Edit note</button>
+						</div>
+						<p className={css.content}>{note.content}</p>
+						<p className={css.date}>
+							{note.updatedAt ? `Updated at: ${note.updatedAt}` : `Created at: ${note.createdAt}`}
+						</p>
+					</div>
+				</div>
+			)}
+		</div>
+	);
 }
+
+export default NoteDetailsClient;
