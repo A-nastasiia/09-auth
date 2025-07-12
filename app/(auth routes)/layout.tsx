@@ -1,9 +1,22 @@
-type Props = {
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import Loader from "../loading";
+
+interface PublicLayoutProps {
   children: React.ReactNode;
-};
+}
 
-const NotesLayout = ({ children }: Props) => {
-  return children;
-};
+export default function PublicLayout({ children }: PublicLayoutProps) {
+  const [loading, setLoading] = useState(true);
 
-export default NotesLayout;
+  const router = useRouter();
+
+  useEffect(() => {
+    router.refresh();
+    setLoading(false);
+  }, [router]);
+
+  return <> {loading ? <Loader /> : children}</>;
+}

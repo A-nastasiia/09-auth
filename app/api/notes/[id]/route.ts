@@ -1,19 +1,44 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { api } from '../../api';
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { api } from "../../api";
+import { parse } from "cookie";
 
-type Props = {
-  params: Promise<{ id: string }>;
-};
+export async function GET() {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get("accessToken")?.value;
+  const refreshToken = cookieStore.get("refreshToken")?.value;
 
-export async function GET(request: NextRequest, { params }: Props) {
-  try {
-    const { id } = await params;
-    const { data } = await api(`/notes/${id}`);
-    if (data) return NextResponse.json(data);
-  } catch {
-    return NextResponse.json({
-      status: '500',
-      message: 'Unable to retrieve note. It might not exist.',
-    });
+  if (accessToken) {
+    return NextResponse.json({ success: true });
   }
+
+  if (refreshToken) {
+    const apiRes = await api.get("auth/session", {
+      headers: {
+        Cookie: cookieStore.toString(),
+      },
+    });
+
+    const setCookie = apiRes.headers["set-cookie"];
+
+    if (setCookie) {
+      const cookieArray = Array.isArray(setCookie) ? setCookie : [setCookie];
+      for (const cookieStr of cookieArray) {
+        const parsed = parse(cookieStr);
+
+        const options = {
+          expires: parsed.Expires ? new Date(parsed.Expires) : undefined,
+          path: parsed.Path,
+          maxAge: Number(parsed["Max-Age"]),
+        };
+
+        if (parsed.accessToken)
+          cookieStore.set("accessToken", parsed.accessToken, options);
+        if (parsed.refreshToken)
+          cookieStore.set("refreshToken", parsed.refreshToken, options);
+      }
+      return NextResponse.json({ success: true });
+    }
+  }
+  return NextResponse.json({ success: false });
 }

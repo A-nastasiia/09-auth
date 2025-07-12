@@ -36,6 +36,7 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  line-clamp: 3;
 }
 
 .button {
@@ -51,11 +52,6 @@
 }
 
 .button:hover {
-  background-color: #bb2d3b;
-}
-
-.button:disabled {
-  cursor: not-allowed;
   background-color: #bb2d3b;
 }
 

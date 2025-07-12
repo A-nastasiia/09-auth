@@ -21,3 +21,8 @@
   background-color: #444;
   color: #ddd;
 }
+
+.menuLink.active {
+  background-color: aqua;
+  color: darkblue;
+}

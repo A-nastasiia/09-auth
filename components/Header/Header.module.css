@@ -19,11 +19,11 @@
 }
 
 .navigation {
-  position: relative;
   list-style-type: none;
   margin: 0;
   padding: 0;
   display: flex;
+  align-items: baseline;
   gap: 1rem;
 }
 

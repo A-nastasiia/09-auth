@@ -1,56 +1,64 @@
-import { fetchNoteById } from '@/lib/api/clientApi';
+import fetchNoteId from "@/lib/api";
 import {
   dehydrate,
   HydrationBoundary,
   QueryClient,
-} from '@tanstack/react-query';
-import NoteDetailsClient from './NoteDetails.client';
-import { Metadata } from 'next';
+} from "@tanstack/react-query";
+import NoteDetailsClient from "./NoteDetails.client";
+import { Metadata } from "next";
 
-type NoteDetailsProps = {
+interface NoteDetailsProps {
   params: Promise<{ id: string }>;
-};
+}
 
 export async function generateMetadata({
   params,
 }: NoteDetailsProps): Promise<Metadata> {
   const { id } = await params;
-  const { title, content, tag } = await fetchNoteById(Number(id));
+  const res = await fetchNoteId(+id);
   return {
-    title,
-    description: `${tag} note with task ${content}`,
+    title: `Note Details: ${res?.title}`,
+    description: res?.content.slice(0, 30),
     openGraph: {
-      title,
-      description: `${tag} note with task ${content}`,
-      url: `https://08-zustand-pink.vercel.app/notes/${id}`,
+      title: `Note Details: ${res?.title}`,
+      description: res?.content.slice(0, 30),
+      url: `https://09-auth-xi.vercel.app/notes/${res?.id}`,
       images: [
         {
-          url: 'https://ac.goit.global/fullstack/react/notehub-og-meta.jpg',
+          url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
           width: 1200,
           height: 630,
-          alt: `${tag} note with task ${content}`,
+          alt: "notehub image",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `Note Details: ${res?.title}`,
+      description: res?.content.slice(0, 30),
+      images: [
+        {
+          url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+          width: 1200,
+          height: 630,
+          alt: "notehub image",
         },
       ],
     },
   };
 }
 
-const NoteDetails = async ({ params }: NoteDetailsProps) => {
+export default async function NoteDetails({ params }: NoteDetailsProps) {
   const { id } = await params;
+  const noteId = +id;
   const queryClient = new QueryClient();
-  const parseId = Number(id);
-  queryClient.prefetchQuery({
-    queryKey: ['note', parseId],
-    queryFn: () => fetchNoteById(parseId),
+  await queryClient.prefetchQuery({
+    queryKey: ["note", noteId],
+    queryFn: () => fetchNoteId(noteId),
   });
-
   return (
-    <>
-      <HydrationBoundary state={dehydrate(queryClient)}>
-        <NoteDetailsClient />
-      </HydrationBoundary>
-    </>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <NoteDetailsClient />
+    </HydrationBoundary>
   );
-};
-
-export default NoteDetails;
+}

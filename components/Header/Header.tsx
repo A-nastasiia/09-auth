@@ -1,9 +1,9 @@
-import Link from 'next/link';
-import css from './Header.module.css';
-import TagsMenu from '../TagsMenu/TagsMenu';
-import AuthNavigation from '../AuthNavigation/AuthNavigation';
+import Link from "next/link";
+import css from "./Header.module.css";
+import TagsMenu from "../TagsMenu/TagsMenu";
+import AuthNavigation from "../AuthNavigation/AuthNavigation";
 
-const Header = () => {
+export default function Header() {
   return (
     <header className={css.header}>
       <Link href="/" aria-label="Home">
@@ -14,16 +14,12 @@ const Header = () => {
           <li>
             <Link href="/">Home</Link>
           </li>
-          <AuthNavigation />
           <li>
-            <TagsMenu
-              tags={['Work', 'Personal', 'Meeting', 'Shopping', 'Todo']}
-            />
+            <TagsMenu />
           </li>
+          <AuthNavigation />
         </ul>
       </nav>
     </header>
   );
-};
-
-export default Header;
+}

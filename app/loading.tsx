@@ -1,18 +1,23 @@
-import type { CSSProperties } from 'react';
-import { ScaleLoader } from 'react-spinners';
-import css from './page.module.css';
+import type { CSSProperties } from "react";
+import { BeatLoader } from "react-spinners";
 
 const override: CSSProperties = {
-  display: 'flex',
-  justifyContent: 'center',
+  display: "flex",
+  justifyContent: "center",
+  margin: "0 auto",
+  borderColor: "red",
+  color: "gray",
 };
 
-const Loader = () => {
+export default function Loader() {
   return (
-    <div className={css.backdrop}>
-      <ScaleLoader color="#dc3545" cssOverride={override} />
-    </div>
+    <>
+      <BeatLoader
+        cssOverride={override}
+        size={10}
+        aria-label="Loading Spinner"
+        data-testid="loader"
+      />
+    </>
   );
-};
-
-export default Loader;
+}

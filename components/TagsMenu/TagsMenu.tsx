@@ -1,45 +1,35 @@
-'use client';
+"use client";
 
-import css from './TagsMenu.module.css';
-import { useState } from 'react';
-import Link from 'next/link';
-import { TagsProps } from '@/types/note';
+import Link from "next/link";
+import css from "./TagsMenu.module.css";
+import { useState } from "react";
 
-const TagsMenu = ({ tags }: TagsProps) => {
-  const [isOpenMenu, setIsOpenMenu] = useState<boolean>(false);
-  const toggle = () => setIsOpenMenu(!isOpenMenu);
+const tags: string[] = ["Work", "Personal", "Meeting", "Shopping", "Todo"];
+
+export default function TagsMenu() {
+  const [isOpen, setIsOpen] = useState(false);
+  function toggle() {
+    setIsOpen(!isOpen);
+  }
 
   return (
     <div className={css.menuContainer}>
-      <button
-        onClick={toggle}
-        className={css.menuButton}
-        aria-label={isOpenMenu ? 'Close notes menu' : 'Open notes menu'}
-      >
+      <button className={css.menuButton} onClick={toggle}>
         Notes ▾
       </button>
-      {isOpenMenu && (
+      {isOpen && (
         <ul className={css.menuList}>
           <li className={css.menuItem}>
             <Link
               href={`/notes/filter/all`}
               className={css.menuLink}
               onClick={toggle}
-              aria-expanded={isOpenMenu}
-              aria-haspopup="true"
-              aria-label="View all notes"
-              role="menuitem"
             >
-              All Notes
+              All notes
             </Link>
           </li>
-          {tags.map(tag => (
-            <li
-              key={tag}
-              className={css.menuItem}
-              aria-label={`View notes tagged with ${tag}`}
-              role="menuitem"
-            >
+          {tags.map((tag) => (
+            <li className={css.menuItem} key={tag}>
               <Link
                 href={`/notes/filter/${tag}`}
                 className={css.menuLink}
@@ -53,6 +43,4 @@ const TagsMenu = ({ tags }: TagsProps) => {
       )}
     </div>
   );
-};
-
-export default TagsMenu;
+}

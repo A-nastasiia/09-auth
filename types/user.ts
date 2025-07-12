@@ -1,9 +1,10 @@
 export interface User {
   email: string;
   password: string;
-  avatar?: string;
 }
-export interface userRequest {
+
+export interface LogInUser {
+  username: string;
   email: string;
-  password: string;
+  avatar?: string;
 }

@@ -1,56 +1,28 @@
-'use client';
+"use client";
 
-import Modal from '@/components/Modal/Modal';
-import css from './NotePreview.module.css';
-import { useParams, useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
-import { fetchNoteById } from '@/lib/api/clientApi';
-import Loader from '@/components/Loader/Loader';
+import Modal from "@/components/Modal/Modal";
+import NotePreview from "@/components/NotePreview/NotePreview";
+import fetchNoteId from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
+import { useParams, useRouter } from "next/navigation";
 
-const NotePreviewClient = () => {
+export default function NotePreviewClient() {
   const router = useRouter();
-  const closeModal = () => router.back();
   const { id } = useParams<{ id: string }>();
-  const parseId = Number(id);
-
-  const {
-    data: note,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ['note', parseId],
-    queryFn: () => fetchNoteById(parseId),
+  const noteId = +id;
+  const { data } = useQuery({
+    queryKey: ["note", noteId],
+    queryFn: () => fetchNoteId(noteId),
     refetchOnMount: false,
   });
-  if (isLoading)
-    return (
-      <div className={css.backdrop}>
-        <Loader />
-      </div>
-    );
-  if (error) return <p>Something went wrong.</p>;
-  if (!note) return <p>Sorry, note not found.</p>;
 
-  const formattedDate = note.updatedAt
-    ? `Updated at: ${note.updatedAt}`
-    : `Created at: ${note.createdAt}`;
+  function handleClose() {
+    router.back();
+  }
+
   return (
-    <Modal onClose={closeModal}>
-      <div className={css.container}>
-        <div className={css.item}>
-          <div className={css.header}>
-            <h2>{note.title}</h2>
-            <button className={css.backBtn} onClick={closeModal}>
-              Back
-            </button>
-          </div>
-          <p className={css.content}>{note.content}</p>
-          <p className={css.tag}>{note.tag}</p>
-          <p className={css.date}>{formattedDate}</p>
-        </div>
-      </div>
+    <Modal onClose={handleClose}>
+      <NotePreview note={data} />
     </Modal>
   );
-};
-
-export default NotePreviewClient;
+}

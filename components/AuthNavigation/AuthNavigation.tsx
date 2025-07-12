@@ -1,7 +1,7 @@
-import Link from 'next/link';
-import css from './AuthNavigation.module.css';
+import Link from "next/link";
+import css from "./AuthNavigation.module.css";
 
-const AuthNavigation = () => {
+export default function AuthNavigation() {
   return (
     <>
       <li className={css.navigationItem}>
@@ -28,6 +28,4 @@ const AuthNavigation = () => {
       </li>
     </>
   );
-};
-
-export default AuthNavigation;
+}

@@ -1,46 +1,63 @@
-import { Metadata } from 'next';
-import NotesClient from './Notes.client';
-import { fetchNotes } from '@/lib/api/clientApi';
+import { fetchNotes } from "@/lib/api";
+import NotesClient from "./Notes.client";
+import { Metadata } from "next";
 
-type NotesProps = {
+interface NotesProps {
   params: Promise<{ slug: string[] }>;
-};
+}
 
 export async function generateMetadata({
   params,
 }: NotesProps): Promise<Metadata> {
   const { slug } = await params;
-  const allNotes = slug[0] === 'all' ? 'All Notes' : `${slug[0]} notes`;
+  const tag = slug[0] === "all" ? undefined : slug[0];
   return {
-    title: allNotes,
-    description:
-      'Your centralized space for organizing and storing all your notes. Access, manage, and search all your important information in one place.',
+    title: `Notes: ${tag ? `${tag}` : "all"}`,
+    description: `Note: ${tag || "all"} — created in Notehub.`,
     openGraph: {
-      title: allNotes,
-      description:
-        'The centralized hub for all your notes. Organize, store, and easily access your entire collection of information.',
-      url: `https://08-zustand-pink.vercel.app/notes/filter/${allNotes}`,
+      title: `Notes: ${tag ? `${tag}` : "all"}`,
+      description: `Note: ${tag || "all"} — created in Notehub.`,
+      url: `https://09-auth-xi.vercel.app/notes/filter/${slug.join("/")}`,
       images: [
         {
-          url: 'https://ac.goit.global/fullstack/react/notehub-og-meta.jpg',
+          url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
           width: 1200,
           height: 630,
-          alt: allNotes,
+          alt: "notehub image",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `Notes: ${tag ? `${tag}` : "all"}`,
+      description: `Note: ${tag || "all"} — created in Notehub.`,
+      images: [
+        {
+          url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+          width: 1200,
+          height: 630,
+          alt: "notehub image",
         },
       ],
     },
   };
 }
 
-const Notes = async ({ params }: NotesProps) => {
-  const { slug } = await params;
-  const tag = slug[0] === 'all' ? '' : slug[0];
-  const data = await fetchNotes({
-    page: 1,
-    searchQuery: '',
-    tag,
-  });
-  return <NotesClient initialData={data} tag={tag} />;
-};
+export const revalidate = 60;
 
-export default Notes;
+export default async function Notes({ params }: NotesProps) {
+  const initialQuery = "";
+  const initialPage = 1;
+  const { slug } = await params;
+  const tag = slug[0] === "all" ? undefined : slug[0];
+  const data = await fetchNotes(initialQuery, initialPage, tag);
+
+  return (
+    <NotesClient
+      initialQuery={initialQuery}
+      initialPage={initialPage}
+      initialTag={tag}
+      initialData={data}
+    />
+  );
+}

@@ -1,36 +1,51 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { api } from '../api';
+import { NextRequest, NextResponse } from "next/server";
+import { api } from "../api";
+import { cookies } from "next/headers";
 
 export async function GET(request: NextRequest) {
-  const search = request.nextUrl.searchParams.get('search') ?? '';
-  const tag = request.nextUrl.searchParams.get('tag') ?? '';
-  const page = Number(request.nextUrl.searchParams.get('page') ?? 1);
-  const perPage = Number(request.nextUrl.searchParams.get('perPage') ?? 12);
-  const selectTag = tag === 'All' ? '' : tag;
+  const cookieStore = await cookies();
+  const search = request.nextUrl.searchParams.get("search") ?? "";
+  const page = Number(request.nextUrl.searchParams.get("page") ?? 1);
+  const rawTag = request.nextUrl.searchParams.get("tag") ?? "";
+  const tag = rawTag === "all" ? "" : rawTag;
 
-  const { data } = await api('/notes', {
+  const { data } = await api("/notes", {
     params: {
+      ...(search !== "" && { search }),
       page,
-      perPage,
-      ...(tag && { tag: selectTag }),
-      ...(search !== '' && { search }),
+      perPage: 12,
+      ...(tag && { tag }),
+    },
+    headers: {
+      Cookie: cookieStore.toString(),
     },
   });
   if (data) {
     return NextResponse.json(data);
   }
-  return NextResponse.json({ error: 'Failed to fetch notes' }, { status: 500 });
+
+  return NextResponse.json({ error: "Failed to fetch notes" }, { status: 500 });
 }
 
 export async function POST(request: NextRequest) {
+  const cookieStore = await cookies();
+
   try {
     const body = await request.json();
-    const { data } = await api.post('/notes', body);
+
+    const { data } = await api.post("/notes", body, {
+      headers: {
+        Cookie: cookieStore.toString(),
+        "Content-Type": "application/json",
+      },
+    });
+
     if (data) {
       return NextResponse.json(data, { status: 201 });
     }
   } catch (error) {
-    console.error('Error creating note:', error);
+    console.error("Error creating note:", error);
   }
-  return NextResponse.json({ error: 'Failed to create note' }, { status: 500 });
+
+  return NextResponse.json({ error: "Failed to create note" }, { status: 500 });
 }
