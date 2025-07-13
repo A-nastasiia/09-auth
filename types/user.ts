@@ -1,12 +1,10 @@
 export interface User {
-  email: string;
-  password: string;
-  avatar: string;
-  username: string;
+	username: string;
+	email: string;
+	avatar: string;
 }
 
-export interface LogInUser {
-  username: string;
-  email: string;
-  avatar?: string;
+export interface SignFormsValues {
+	email: string;
+	password: string;
 }

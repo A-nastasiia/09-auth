@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import Loader from "../loading";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { BarLoader } from 'react-spinners';
 
-interface PublicLayoutProps {
-  children: React.ReactNode;
-}
+type Props = {
+	children: React.ReactNode;
+};
 
-export default function PublicLayout({ children }: PublicLayoutProps) {
-  const [loading, setLoading] = useState(true);
+export default function AuthLayout({ children }: Props) {
+	const [loading, setLoading] = useState(true);
 
-  const router = useRouter();
+	const router = useRouter();
 
-  useEffect(() => {
-    router.refresh();
-    setLoading(false);
-  }, [router]);
+	useEffect(() => {
+		router.refresh();
+		setLoading(false);
+	}, [router]);
 
-  return <> {loading ? <Loader /> : children}</>;
+	return <>{loading ? <BarLoader color="#ffffff" width={80} height={4} /> : children}</>;
 }

@@ -1,9 +1,18 @@
-"use client";
+'use client';
+import ErrorMessage from '@/components/ErrorMessage/ErrorMessage';
+import css from './NoteDetails.module.css';
 
-interface ErrorProps {
-  error: Error;
+type ErrorProps = {
+	error: Error;
+};
+
+function Error({ error }: ErrorProps) {
+	return (
+		<div>
+			<p className={css.errorMessage}>Could not fetch note details. {error.message}</p>
+			<ErrorMessage />
+		</div>
+	);
 }
 
-export default function Error({ error }: ErrorProps) {
-  return <p>Could not fetch note details. {error.message}</p>;
-}
+export default Error;

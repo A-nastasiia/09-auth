@@ -1,77 +1,107 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import css from "./SignUpPage.module.css";
-import { signUp } from "@/lib/api/clientApi";
-import { useAuthStore } from "@/lib/store/authStore";
-import { toast } from 'react-hot-toast';
+import css from './SignUpPage.module.css';
+import { signUp } from '@/lib/api/clientApi';
+import { SignRequest } from '@/types/services';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useAuthStore } from '@/lib/store/authStore';
+import * as Yup from 'yup';
+import { SignFormsValues } from '@/types/user';
 
-export default function SignUpPage() {
-const { setUser } = useAuthStore();
- const router = useRouter();
- const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+const validationSchema = Yup.object().shape({
+	email: Yup.string().required('Email is required').email('Enter a valid email address'),
+	password: Yup.string().required('Password is required').min(6, 'Password must be at least 6 characters'),
+});
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
+const SignUpPage = () => {
+	const router = useRouter();
+	const [error, setError] = useState('');
+	const setUser = useAuthStore(state => state.setUser);
+	const [formRegisterData, setRegisterFormData] = useState<SignFormsValues>({
+		email: '',
+		password: '',
+	});
 
- try {
-      const userData = await signUp({ email, password });
-      setUser(userData);
-      router.push("/profile");
-      toast.success("Registration successful!");
+	async function validateRegister(data: SignFormsValues): Promise<string | null> {
+		try {
+			await validationSchema.validate(data, { abortEarly: false });
+			return null;
+		} catch (err) {
+			if (err instanceof Yup.ValidationError) {
+				return err.errors[0];
+			}
+			return 'Unknown validation error';
+		}
+	}
 
-    } catch {
-      setError("Registration failed. Please try again.");
-      toast.error("Registration failed. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const { name, value } = e.target;
+		setRegisterFormData(data => ({
+			...data,
+			[name]: value,
+		}));
+	};
 
-  return (
-    <>
-      <main className={css.mainContent}>
-        <form className={css.form} onSubmit={handleSubmit}>
-          <h1 className={css.formTitle}>Sign up</h1>
-          <div className={css.formGroup}>
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              name="email"
-              value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={css.input}
-            required
-            />
-          </div>
+	const handleSubmit = async (formData: FormData) => {
+		try {
+			setError('');
 
-          <div className={css.formGroup}>
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              name="password"
-             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={css.input}
-            required
-            />
-          </div>
-                {error && <p className={css.error}>{error}</p>}
-          <div className={css.actions}>
-            <button type="submit" className={css.submitButton} disabled={isLoading}>
-             {isLoading ? "Registering..." : "Register"}
-            </button>
-          </div>
-        </form>
-      </main>
-    </>
-  );
-}
+			const raw = Object.fromEntries(formData);
+			const data: SignRequest = {
+				email: raw.email.toString(),
+				password: raw.password.toString(),
+			};
+
+			const errorValidation = await validateRegister(data);
+
+			if (errorValidation) {
+				setError(errorValidation);
+				return;
+			}
+
+			const res = await signUp(data);
+			if (res) {
+				setUser(res);
+				router.push('/profile');
+			} else {
+				setError('Invalid data');
+			}
+		} catch {
+			setError('Invalid data');
+		}
+	};
+	return (
+		<main className={css.mainContent}>
+			<h1 className={css.formTitle}>Sign up</h1>
+			<form className={css.form} action={handleSubmit}>
+				<div className={css.formGroup}>
+					<label htmlFor="email">Email</label>
+					<input
+						id="email"
+						type="email"
+						name="email"
+						className={css.input}
+						required
+						value={formRegisterData.email}
+						onChange={handleChange}
+					/>
+				</div>
+
+				<div className={css.formGroup}>
+					<label htmlFor="password">Password</label>
+					<input id="password" type="password" name="password" className={css.input} required />
+				</div>
+
+				<div className={css.actions}>
+					<button type="submit" className={css.submitButton}>
+						Register
+					</button>
+				</div>
+				{error && <p className={css.error}>{error}</p>}
+			</form>
+		</main>
+	);
+};
+
+export default SignUpPage;

@@ -1,80 +1,111 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { signIn } from "@/lib/api/clientApi";
-import { useAuthStore } from "@/lib/store/authStore";
-import { toast } from "react-hot-toast";
-import css from "./SignInPage.module.css";
+import { useRouter } from 'next/navigation';
+import css from './SignInPage.module.css';
+import { useState } from 'react';
+import { SignRequest } from '@/types/services';
+import { signIn } from '@/lib/api/clientApi';
+import { useAuthStore } from '@/lib/store/authStore';
+import { SignFormsValues } from '@/types/user';
+import * as Yup from 'yup';
 
-export default function SignInPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+const validationSchema = Yup.object().shape({
+	email: Yup.string().required('Email is required').email('Enter a valid email address'),
+	password: Yup.string().required('Password is required').min(6, 'Password must be at least 6 characters'),
+});
 
-  const router = useRouter();
-  const { setUser } = useAuthStore();
+const SignIn = () => {
+	const router = useRouter();
+	const [error, setError] = useState('');
+	const setUser = useAuthStore(state => {
+		return state.setUser;
+	});
+	const [formLoginData, setLoginFormData] = useState<SignFormsValues>({
+		email: '',
+		password: '',
+	});
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
+	async function validateLogin(data: SignFormsValues): Promise<string | null> {
+		try {
+			await validationSchema.validate(data, { abortEarly: false });
+			return null;
+		} catch (err) {
+			if (err instanceof Yup.ValidationError) {
+				return err.errors[0];
+			}
+			return 'Unknown validation error';
+		}
+	}
 
-    try {
-      const userData = await signIn({ email, password });
-      setUser(userData);
-      toast.success("Logged in successfully");
-      router.push("/profile");
-    } catch {
-      toast.error("Login failed. Check credentials.");
-      setError("Invalid email or password.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const { name, value } = e.target;
+		setLoginFormData(data => ({
+			...data,
+			[name]: value,
+		}));
+	};
 
-  return (
-    <>
-      <main className={css.mainContent}>
-        <form className={css.form} onSubmit={handleSubmit}>
-          <h1 className={css.formTitle}>Sign in</h1>
+	const handleSubmit = async (formData: FormData) => {
+		try {
+			setError('');
 
-          <div className={css.formGroup}>
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              name="email"
-              className={css.input}
-              value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            />
-          </div>
+			const raw = Object.fromEntries(formData);
+			const data: SignRequest = {
+				email: raw.email.toString(),
+				password: raw.password.toString(),
+			};
 
-          <div className={css.formGroup}>
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              name="password"
-              className={css.input}
-               value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            />
-          </div>
+			const errorValidation = await validateLogin(data);
 
-             {error && <p className={css.error}>{error}</p>}
+			if (errorValidation) {
+				setError(errorValidation);
+				return;
+			}
 
-          <div className={css.actions}>
-            <button type="submit" className={css.submitButton} disabled={isLoading}>
-              {isLoading ? "Logging in..." : "Log in"}
-            </button>
-          </div>
-        </form>
-      </main>
-    </>
-  );
-}
+			const res = await signIn(data);
+			if (res) {
+				setUser(res);
+				router.push('/profile');
+			} else {
+				setError('Invalid data');
+			}
+		} catch {
+			setError('Invalid data');
+		}
+	};
+	return (
+		<main className={css.mainContent}>
+			<form className={css.form} action={handleSubmit}>
+				<h1 className={css.formTitle}>Sign in</h1>
+
+				<div className={css.formGroup}>
+					<label htmlFor="email">Email</label>
+					<input
+						id="email"
+						type="email"
+						name="email"
+						className={css.input}
+						required
+						value={formLoginData.email}
+						onChange={handleChange}
+					/>
+				</div>
+
+				<div className={css.formGroup}>
+					<label htmlFor="password">Password</label>
+					<input id="password" type="password" name="password" className={css.input} required />
+				</div>
+
+				<div className={css.actions}>
+					<button type="submit" className={css.submitButton}>
+						Log in
+					</button>
+				</div>
+
+				<p className={css.error}>{error}</p>
+			</form>
+		</main>
+	);
+};
+
+export default SignIn;

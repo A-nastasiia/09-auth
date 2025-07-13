@@ -1,56 +1,67 @@
-import css from "./NoteList.module.css";
-import type { Note } from "../../types/note";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteNote } from "../../lib/api/clientApi";
-import toast, { Toaster } from "react-hot-toast";
-import Link from "next/link";
+import cssStyles from './NoteList.module.css';
+import type { Note } from '../../types/note';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { deleteNote } from '@/lib/api/clientApi';
+import { BarLoader } from 'react-spinners';
+import ErrorMessage from '../ErrorMessage/ErrorMessage';
+import { useState } from 'react';
+import Link from 'next/link';
 
 interface NoteListProps {
-  notes: Note[];
+	notes: Note[];
 }
 
 export default function NoteList({ notes }: NoteListProps) {
-  const queryClient = useQueryClient();
-  const mutationDelete = useMutation({
-    mutationFn: deleteNote,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-      toast.success("Done! The note has been deleted.");
-    },
-    onError: () => {
-      toast.error("Oops! Something went wrong — the note wasn't deleted.");
-    },
-  });
+	const [deletingNoteId, setDeletingNoteId] = useState<Note['id'] | null>(null);
 
-  function handleDelete(noteId: string) {
-    mutationDelete.mutate(noteId);
-  }
-  return (
-    <>
-      <ul className={css.list}>
-        {notes.length > 0 &&
-          notes.map((note) => (
-            <li className={css.listItem} key={note.id}>
-              <h2 className={css.title}>{note.title}</h2>
-              <p className={css.content}>{note.content}</p>
-              <div className={css.footer}>
-                <span className={css.tag}>{note.tag}</span>
-                <Link href={`/notes/${note.id}`} className={css.link}>
-                  View details
-                </Link>
-                <button
-                  className={css.button}
-                  onClick={() => {
-                    handleDelete(note.id);
-                  }}
-                >
-                  Delete
-                </button>
-              </div>
-            </li>
-          ))}
-      </ul>
-      <Toaster />
-    </>
-  );
+	const queryClient = useQueryClient();
+
+	const mutation = useMutation({
+		mutationFn: async (id: Note['id']) => deleteNote(id),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['notes'] });
+			setDeletingNoteId(null);
+		},
+		onError: () => {
+			setDeletingNoteId(null);
+		},
+	});
+
+	const { isError } = mutation;
+
+	const handleDelete = (id: string) => {
+		setDeletingNoteId(id);
+		mutation.mutate(id);
+	};
+
+	return (
+		<>
+			<ul className={cssStyles.list}>
+				{notes.map(note => {
+					return (
+						<li className={cssStyles.listItem} key={note.id}>
+							<h2 className={cssStyles.title}>{note.title}</h2>
+							<p className={cssStyles.content}>{note.content}</p>
+							<div className={cssStyles.footer}>
+								<span className={cssStyles.tag}>{note.tag}</span>
+								<Link className={cssStyles.detailsLink} href={`/notes/${note.id}`}>
+									View details
+								</Link>
+								<button
+									className={cssStyles.button}
+									onClick={() => handleDelete(note.id)}
+									disabled={deletingNoteId === note.id}
+								>
+									{deletingNoteId !== note.id ? 'Delete' : 'In progress'}
+									{deletingNoteId === note.id && <BarLoader color="#ffffff" width={80} height={4} />}
+								</button>
+							</div>
+						</li>
+					);
+				})}
+			</ul>
+
+			{isError && <ErrorMessage />}
+		</>
+	);
 }

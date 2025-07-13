@@ -1,23 +1,20 @@
-import type { CSSProperties } from "react";
-import { BeatLoader } from "react-spinners";
+import { BarLoader } from 'react-spinners';
+import css from './page.module.css';
 
-const override: CSSProperties = {
-  display: "flex",
-  justifyContent: "center",
-  margin: "0 auto",
-  borderColor: "red",
-  color: "gray",
+const Loading = () => {
+	return (
+		<div className={css.wrapper}>
+			<p className={css.loader}>Loading, please wait...</p>
+			<BarLoader
+				cssOverride={{
+					display: 'block',
+					margin: '0 auto',
+					backgroundColor: 'red',
+					width: '500px',
+				}}
+			/>
+		</div>
+	);
 };
 
-export default function Loader() {
-  return (
-    <>
-      <BeatLoader
-        cssOverride={override}
-        size={10}
-        aria-label="Loading Spinner"
-        data-testid="loader"
-      />
-    </>
-  );
-}
+export default Loading;

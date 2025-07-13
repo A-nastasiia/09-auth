@@ -1,15 +1,7 @@
 import { Note } from '@/types/note';
 import { nextServer } from './api';
+import { CheckSessionResponse, SignRequest } from '@/types/services';
 import { User } from '@/types/user';
-
-type CheckSessionResponse = {
-	success: boolean;
-};
-
-interface SignRequest {
-	email: string;
-	password: string;
-}
 
 interface NotesResponse {
 	notes: Note[];
@@ -30,7 +22,6 @@ export interface CreateNoteValues {
 }
 
 export type EditUserRequest = {
-	email: string;
 	username: string;
 };
 
@@ -68,14 +59,14 @@ export async function fetchNoteById(id: string): Promise<Note> {
 	return res.data;
 }
 
-export async function signUp(data: SignRequest): Promise<User> {
+export async function signUp(data: SignRequest) {
 	const res = await nextServer.post<User>('/auth/register', data);
 	return res.data;
 }
 
-export async function signIn(data: SignRequest): Promise<User> {
+export async function signIn(data: SignRequest) {
 	const res = await nextServer.post<User>('/auth/login', data);
-	return res.data; 
+	return res.data;
 }
 
 export const checkSession = async () => {
@@ -93,7 +84,7 @@ export const logout = async () => {
 	return data;
 };
 
-export const editUser = async (userData: { username: string }): Promise<User> => {
+export const editUser = async (userData: EditUserRequest) => {
 	const { data } = await nextServer.patch<User>('/users/me', userData);
 	return data;
 };

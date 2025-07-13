@@ -1,41 +1,31 @@
-import ErrorPage from "@/components/ErrorPage/ErrorPage";
-import { Metadata } from "next";
+import { Metadata } from 'next';
+import css from './page.module.css';
 
 export const metadata: Metadata = {
-  title: "404 — Notehub",
-  description:
-    "Looks like you've reached a dead end. Let's get you back to your notes.",
-  openGraph: {
-    title: "404 — Notehub",
-    description:
-      "Looks like you've reached a dead end. Let's get you back to your notes.",
-    url: "https://08-zustand-beta.vercel.app/404",
-    images: [
-      {
-        url: "https://colorlib.com/wp/wp-content/uploads/sites/2/404-error-page-templates.jpg",
-        width: 1200,
-        height: 630,
-        alt: "not found 404",
-      },
-    ],
-    type: "article",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "404 — Notehub",
-    description:
-      "Looks like you've reached a dead end. Let's get you back to your notes.",
-    images: [
-      {
-        url: "https://colorlib.com/wp/wp-content/uploads/sites/2/404-error-page-templates.jpg",
-        width: 1200,
-        height: 630,
-        alt: "notehub image",
-      },
-    ],
-  },
+	title: 'Page not Found',
+	description: 'Oops! We couldn`t find the page you were looking for. It might have been deleted or never existed.',
+	openGraph: {
+		title: 'Page not Found',
+		description: 'Oops! We couldn`t find the page you were looking for. It might have been deleted or never existed.',
+		url: 'https://example.com/404',
+		images: [
+			{
+				url: 'https://storage.googleapis.com/support-forums-api/attachment/thread-275804406-4521668504705607705.jpg',
+				width: 1200,
+				height: 630,
+				alt: 'NoteHub 404',
+			},
+		],
+	},
 };
 
-export default function NotFoundPage() {
-  return <ErrorPage />;
-}
+const NotFound = () => {
+	return (
+		<>
+			<h1 className={css.title}>404 - Page not found</h1>
+			<p className={css.description}>Sorry, the page you are looking for does not exist.</p>
+		</>
+	);
+};
+
+export default NotFound;
