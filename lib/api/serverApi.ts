@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { nextServer } from './api';
 import { User } from '@/types/user';
+import { Note } from '@/types/note';
 
 type CheckSessionResponse = {
 	success: boolean;
@@ -26,3 +27,14 @@ export const getServerMe = async () => {
 
 	return data;
 };
+
+export async function fetchServerNoteById(id: string): Promise<Note> {
+	const cookieStore = await cookies();
+
+	const { data } = await nextServer.get<Note>(`/notes/${id}`, {
+		headers: {
+			Cookie: cookieStore.toString(),
+		},
+	});
+	return data;
+}
