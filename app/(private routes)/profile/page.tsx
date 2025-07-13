@@ -2,16 +2,17 @@ import Image from "next/image";
 import css from "./ProfilePage.module.css";
 import Link from "next/link";
 import { Metadata } from "next";
+import { getServerMe } from "@/lib/api/serverApi";
 
 export const metadata: Metadata = {
-  title: "User Profile",
+  title: "Profile",
   description:
     "View and manage your personal information, profile photo, and account settings in NoteHub.",
   openGraph: {
     title: "User Profile",
     description:
       "View and manage your personal information, profile photo, and account settings in NoteHub.",
-    url: "https://09-auth-xi.vercel.app/profile",
+    url: "https://09-auth-rho.vercel.app//profile",
     images: [
       {
         url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
@@ -37,7 +38,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ProfilePage() {
+export default async  function ProfilePage() {
+  const user = await getServerMe();
+
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
   return (
     <>
       <main className={css.mainContent}>
@@ -50,7 +57,7 @@ export default function ProfilePage() {
           </div>
           <div className={css.avatarWrapper}>
             <Image
-              src=""
+              src={user?.avatar || "/default-avatar.png"}
               alt="User Avatar"
               width={120}
               height={120}
@@ -58,8 +65,8 @@ export default function ProfilePage() {
             />
           </div>
           <div className={css.profileInfo}>
-            <p>Username: your_username</p>
-            <p>Email: your_email@example.com</p>
+            <p>Username: {user.username}</p>
+            <p>Email: {user.email}</p>
           </div>
         </div>
       </main>

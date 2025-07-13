@@ -1,15 +1,43 @@
 "use client";
 
-// import { useState } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { signIn } from "@/lib/api/clientApi";
+import { useAuthStore } from "@/lib/store/authStore";
+import { toast } from "react-hot-toast";
 import css from "./SignInPage.module.css";
 
 export default function SignInPage() {
-  //   const [error, setError] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const router = useRouter();
+  const { setUser } = useAuthStore();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const userData = await signIn({ email, password });
+      setUser(userData);
+      toast.success("Logged in successfully");
+      router.push("/profile");
+    } catch {
+      toast.error("Login failed. Check credentials.");
+      setError("Invalid email or password.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <>
       <main className={css.mainContent}>
-        <form className={css.form}>
+        <form className={css.form} onSubmit={handleSubmit}>
           <h1 className={css.formTitle}>Sign in</h1>
 
           <div className={css.formGroup}>
@@ -19,7 +47,9 @@ export default function SignInPage() {
               type="email"
               name="email"
               className={css.input}
-              required
+              value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
             />
           </div>
 
@@ -30,17 +60,19 @@ export default function SignInPage() {
               type="password"
               name="password"
               className={css.input}
-              required
+               value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
             />
           </div>
 
+             {error && <p className={css.error}>{error}</p>}
+
           <div className={css.actions}>
-            <button type="submit" className={css.submitButton}>
-              Log in
+            <button type="submit" className={css.submitButton} disabled={isLoading}>
+              {isLoading ? "Logging in..." : "Log in"}
             </button>
           </div>
-
-          {/* {error && <p className={css.error}>{error}</p>} */}
         </form>
       </main>
     </>

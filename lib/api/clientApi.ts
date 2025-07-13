@@ -58,7 +58,7 @@ export async function createNote({ title, content, tag }: CreateNoteValues): Pro
 	return res.data;
 }
 
-export async function deleteNote(id: number): Promise<Note> {
+export async function deleteNote(id: string): Promise<Note> {
 	const res = await nextServer.delete<Note>(`/notes/${id}`);
 	return res.data;
 }
@@ -68,14 +68,14 @@ export async function fetchNoteById(id: string): Promise<Note> {
 	return res.data;
 }
 
-export async function signUp(data: SignRequest) {
+export async function signUp(data: SignRequest): Promise<User> {
 	const res = await nextServer.post<User>('/auth/register', data);
-	return res;
+	return res.data;
 }
 
-export async function signIn(data: SignRequest) {
+export async function signIn(data: SignRequest): Promise<User> {
 	const res = await nextServer.post<User>('/auth/login', data);
-	return res;
+	return res.data; 
 }
 
 export const checkSession = async () => {
@@ -93,7 +93,7 @@ export const logout = async () => {
 	return data;
 };
 
-export const editUser = async (userData: EditUserRequest) => {
+export const editUser = async (userData: { username: string }): Promise<User> => {
 	const { data } = await nextServer.patch<User>('/users/me', userData);
 	return data;
 };

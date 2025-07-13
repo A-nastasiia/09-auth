@@ -6,7 +6,7 @@ type CheckSessionResponse = {
 	success: boolean;
 };
 
-export const checkServerSession = async () => {
+export const checkSession = async () => {
 	const cookieStore = await cookies();
 	const res = await nextServer.get<CheckSessionResponse>('/auth/session', {
 		headers: {
