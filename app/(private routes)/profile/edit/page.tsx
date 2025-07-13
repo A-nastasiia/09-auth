@@ -44,7 +44,7 @@ const ProfileEditPage = () => {
 			<div className={css.profileCard}>
 				<h1 className={css.formTitle}>Edit Profile</h1>
 
-				<Image src={me?.avatar || '/7236095.png'} alt="User Avatar" width={120} height={120} className={css.avatar} />
+				<Image src={me?.avatar || '/defolt.png'} alt="User Avatar" width={120} height={120} className={css.avatar} />
 
 				<form className={css.profileInfo} action={handleEditName}>
 					<div className={css.usernameWrapper}>
